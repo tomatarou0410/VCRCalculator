@@ -27,12 +27,12 @@
 
     <div class="row">
       <label for="v">電圧 V</label>
-      <input id="v" type="number" step="any" placeholder="例: 1.5">
+      <input id="v" type="number" step="any" placeholder="電圧を入力">
     </div>
 
     <div class="row">
       <label for="i">電流</label>
-      <input id="i" type="number" step="any" placeholder="例: 200">
+      <input id="i" type="number" step="any" placeholder="電流を入力">
       <select id="iUnit">
         <option value="A">A</option>
         <option value="mA">mA</option>
@@ -40,8 +40,8 @@
     </div>
 
     <div class="row">
-      <label for="r">抵抗 Ω（複数はカンマ区切り）</label>
-      <input id="r" type="text" placeholder="例: 7.5, 10">
+      <label for="r">抵抗 Ω</label>
+      <input id="r" type="text" placeholder="抵抗値を入力">
     </div>
 
     <div style="display:flex;gap:8px;margin-top:10px">
@@ -117,7 +117,7 @@
         } else if (!hasR){
           V = toNum(elV);
           I = getCurrentInAmp();
-          if (I === 0){ err.textContent = '電流0Aは計算不可。'; return; }
+          if (I === 0){ err.textContent = 'できると思ってんの？ガイジなの？ｗ0Aてｗ'; return; }
           R = V / I;
           out.innerHTML = `<strong>計算結果：</strong> R = ${formatNumber(R)} Ω`;
         }
