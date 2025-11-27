@@ -23,16 +23,16 @@
 <body>
   <div class="card">
     <h1>電圧・電流・抵抗 計算器 (オームの法則)</h1>
-    <p class="note">2つの値を入力すると、残りの1つを計算します。電流は A / mA を切り替えられます。</p>
+    <p class="note">2つの値を入力すると、残りの1つと電力(ｗ)を計算します。電流は A / mA を切り替えられます。3つの値を入力した場合、それが正しいかを判定します</p>
 
     <div class="row">
       <label for="v">電圧 V</label>
-      <input id="v" type="number" step="any" placeholder="電圧を入力.単位に注意">
+      <input id="v" type="number" step="any" placeholder="例: 1.5">
     </div>
 
     <div class="row">
       <label for="i">電流</label>
-      <input id="i" type="number" step="any" placeholder="電流を入力">
+      <input id="i" type="number" step="any" placeholder="例: 200">
       <select id="iUnit">
         <option value="A">A</option>
         <option value="mA">mA</option>
@@ -41,7 +41,7 @@
 
     <div class="row">
       <label for="r">抵抗 Ω</label>
-      <input id="r" type="number" step="any" placeholder="抵抗値を入力">
+      <input id="r" type="number" step="any" placeholder="例: 7.5">
     </div>
 
     <div style="display:flex;gap:8px;margin-top:10px">
@@ -85,40 +85,55 @@
       const hasR = isFilled(elR);
       const count = [hasV,hasI,hasR].filter(Boolean).length;
 
+      if (count === 3){
+        const V = toNum(elV);
+        const I = getCurrentInAmp();
+        const R = toNum(elR);
+        const ok = Math.abs(V - I * R) < 1e-6;
+        out.innerHTML = ok ? '<strong>式は正しいです。</strong>' : '<strong>式が成り立っていません。</strong>';
+        return;
+      }
+
       if (count < 2){ err.textContent = '2つの値を入力してください。'; return; }
-      if (count > 2){ err.textContent = '2つだけ入力してください。二つってわかるかなあ？ちょっと難しい？'; return; }
+      if (count > 2){ err.textContent = '2つだけ入力してください。'; return; }
 
       try{
         let V,I,R;
+        let resultHTML = '';
+
         if (!hasV){
           I = getCurrentInAmp();
           R = toNum(elR);
-          if (R === 0){ err.textContent = '抵抗0Ωは計算不可'; return; }
+          if (R === 0){ err.textContent = '抵抗0Ωは計算不可。'; return; }
           V = I * R;
-          out.innerHTML = `<strong>計算結果：</strong> V = ${formatNumber(V)} V`;
+          resultHTML += `<strong>計算結果：</strong> V = ${formatNumber(V)} V`;
 
         } else if (!hasI){
           V = toNum(elV);
           R = toNum(elR);
-          if (R === 0){ err.textContent = '抵抗0Ωは計算不可'; return; }
+          if (R === 0){ err.textContent = '抵抗0Ωは計算不可。'; return; }
           I = V / R;
-
           let disp = I;
           let unitOut = 'A';
           if(unit.value === 'mA'){ disp = I * 1000; unitOut = 'mA'; }
-
-          out.innerHTML = `<strong>計算結果：</strong> I = ${formatNumber(disp)} ${unitOut}`;
+          resultHTML += `<strong>計算結果：</strong> I = ${formatNumber(disp)} ${unitOut}`;
 
         } else if (!hasR){
           V = toNum(elV);
           I = getCurrentInAmp();
-          if (I === 0){ err.textContent = '電流0Aは計算不可'; return; }
+          if (I === 0){ err.textContent = '電流0Aは計算不可。'; return; }
           R = V / I;
-          out.innerHTML = `<strong>計算結果：</strong> R = ${formatNumber(R)} Ω`;
+          resultHTML += `<strong>計算結果：</strong> R = ${formatNumber(R)} Ω`;
         }
-      }catch(e){
-        err.textContent = '計算エラー。入力を確認してください。';
-      }
+
+        if (isFinite(V) && isFinite(I)){
+          const P = V * I;
+          resultHTML += `<br>電力: ${formatNumber(P)} W`;
+        }
+
+        out.innerHTML = resultHTML;
+
+      }catch(e){ err.textContent = '計算エラー。入力を確認してください。'; }
     });
 
     clearBtn.addEventListener('click', ()=>{
